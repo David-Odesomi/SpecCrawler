@@ -14,15 +14,15 @@ def main():
     print("Hello from Spec Crawler!")
     driver.get('https://jiji.ng/cars?query=macbooks')
     no_change_count = 0
+    scroll_count = 0
 
     # Scrolling down the page
     while True:
-        page_height = driver.execute_script("return document.body.scrollHeight")
-        try:
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-        except:
+        if scroll_count >= 15:
             break
-        time.sleep(2)
+        page_height = driver.execute_script("return document.body.scrollHeight")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+        time.sleep(3)
         new_page_height = driver.execute_script("return document.body.scrollHeight")
         if page_height == new_page_height:
             no_change_count += 1
@@ -30,6 +30,7 @@ def main():
                 break
         else:
             no_change_count = 0
+        scroll_count += 1
 
     content = driver.page_source
     soup = BeautifulSoup(content, 'html.parser')
@@ -43,6 +44,7 @@ def main():
 
     # Create a DataFrame that holds the data. Columns are Product and Price
     df = pd.DataFrame({'Product': products, 'Price': prices})
+    df = df[df['Product'].str.contains('MacBook|Laptop', case=False)]  # filter here
     df.to_csv('products.csv', index=False, encoding='utf-8')
 
 
